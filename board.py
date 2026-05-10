@@ -15,8 +15,10 @@ class GomokuBoard:
             return False
         if self.board[row][col] != 0:
             return False
+        
         self.board[row][col] = self.current_player
         self.move_history.append((row, col))
+        
         if self.check_win(row, col):
             self.game_over = True
             self.winner = self.current_player
@@ -32,6 +34,7 @@ class GomokuBoard:
             return False
         player = self.board[row][col]
         directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
+        
         for dc, dr in directions:
             count = 1
             r, c = row + dr, col + dc
@@ -44,8 +47,10 @@ class GomokuBoard:
                 count += 1
                 r -= dr
                 c -= dc
+                
             if count >= 5:
                 return True
+            
         return False
 
     def undo_move(self):
