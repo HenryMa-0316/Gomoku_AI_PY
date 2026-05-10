@@ -3,9 +3,9 @@ import pygame
 from constant import *
 from board import GomokuBoard
 
-def draw_board(board):
+def draw_board(board, preview_pos = None):
     screen.fill(BG_COLOR)
-    board_pixel_size = (BOARD_SIZE - 1) * CELL_SIZE  # 棋盘实际像素大小
+    board_pixel_size = (BOARD_SIZE - 1) * CELL_SIZE
     for i in range(BOARD_SIZE):
         pos = OFFSET + i * CELL_SIZE
         pygame.draw.line(screen, LINE_COLOR,(OFFSET, pos),(OFFSET + board_pixel_size, pos), 3)
@@ -24,6 +24,17 @@ def draw_board(board):
                 pygame.draw.circle(screen, color, (x, y), CELL_SIZE // 2 - 4)
                 if board.board[r][c] == -1:
                     pygame.draw.circle(screen, BLACK, (x, y), CELL_SIZE // 2 - 4, 2)
+    if preview_pos and not board.game_over:
+        row, col = preview_pos
+        if board.board[row][col] == 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
+            x = OFFSET + col * CELL_SIZE
+            y = OFFSET + row * CELL_SIZE
+            color = BLACK if board.current_player == 1 else WHITE
+            radius = CELL_SIZE // 2 - 4
+            s = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(s, (*color, 120), (radius, radius), radius)
+            screen.blit(s, (x - radius, y - radius))
+
     if board.game_over:
         if board.winner == 1:
             msg = "🎉 BLACK WIN 🎉"
@@ -36,7 +47,7 @@ def draw_board(board):
         msg = "BLACK'S TURN" if board.current_player == 1 else "WHITE'S TURN"
         text_color = TEXT_COLOR
 
-    text = font.render(msg, True, BLACK)
+    text = font.render(msg, True, text_color)
     screen.blit(text, (WINDOW_WIDTH // 2 - text.get_width() // 2, OFFSET + board_pixel_size + 30))
     tip = small_font.render("R: restart   U: undo", True, (0,0,0))
     screen.blit(tip, (WINDOW_WIDTH // 2 - tip.get_width() // 2, OFFSET + board_pixel_size + 75))
@@ -50,27 +61,41 @@ def main():
     small_font = pygame.font.SysFont("Microsoft YaHei", 22)
     board = GomokuBoard()
     clock = pygame.time.Clock()
+    preview_pos = None
     print("✅ Loaded")
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                mx, my = event.pos
+                col = round((mx - OFFSET) / CELL_SIZE)
+                row = round((my - OFFSET) / CELL_SIZE)
+                if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
+                    preview_pos = (row, col)
+                else:
+                    preview_pos = None
+
             elif event.type == pygame.MOUSEBUTTONDOWN and not board.game_over:
                 if event.button == 1:
                     mx, my = event.pos
-                    if (OFFSET - 10 < mx < WINDOW_WIDTH - OFFSET + 10 and OFFSET - 10 < my < OFFSET + (BOARD_SIZE - 1) * CELL_SIZE + 10):
-                        col = round((mx - OFFSET) / CELL_SIZE)
-                        row = round((my - OFFSET) / CELL_SIZE)
-                        if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
-                            board.make_move(row, col)
+                    col = round((mx - OFFSET) / CELL_SIZE)
+                    row = round((my - OFFSET) / CELL_SIZE)
+                    if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
+                        board.make_move(row, col)
+                        preview_pos = None
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     board.reset()
                 elif event.key == pygame.K_u:
                     board.undo_move()
+                    board.game_over = False
+                    board.winner = 0
 
-        draw_board(board)
+        draw_board(board, preview_pos)
         pygame.display.flip()
         clock.tick(60)
 
