@@ -6,15 +6,18 @@ from board import GomokuBoard
 def draw_board(board, preview_pos = None):
     screen.fill(BG_COLOR)
     board_pixel_size = (BOARD_SIZE - 1) * CELL_SIZE
+    
     for i in range(BOARD_SIZE):
         pos = OFFSET + i * CELL_SIZE
         pygame.draw.line(screen, LINE_COLOR,(OFFSET, pos),(OFFSET + board_pixel_size, pos), 3)
         pygame.draw.line(screen, LINE_COLOR,(pos, OFFSET),(pos, OFFSET + board_pixel_size), 3)
     stars = [(3, 3), (3,11), (3, 7), (11, 3), (11, 11), (11, 7), (7, 7), (7, 3), (7, 11)]
+    
     for r, c in stars:
         x = OFFSET + c * CELL_SIZE
         y = OFFSET + r * CELL_SIZE
         pygame.draw.circle(screen, LINE_COLOR, (x, y), 7)
+        
     for r in range(BOARD_SIZE):
         for c in range(BOARD_SIZE):
             if board.board[r][c] != 0:
@@ -24,6 +27,7 @@ def draw_board(board, preview_pos = None):
                 pygame.draw.circle(screen, color, (x, y), CELL_SIZE // 2 - 4)
                 if board.board[r][c] == -1:
                     pygame.draw.circle(screen, BLACK, (x, y), CELL_SIZE // 2 - 4, 2)
+                    
     if preview_pos and not board.game_over:
         row, col = preview_pos
         if board.board[row][col] == 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
@@ -64,6 +68,7 @@ def main():
     preview_pos = None
     print("✅ Loaded")
     running = True
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -104,5 +109,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
